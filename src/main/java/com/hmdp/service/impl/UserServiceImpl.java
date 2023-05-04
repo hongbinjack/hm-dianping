@@ -12,6 +12,7 @@ import com.hmdp.entity.User;
 import com.hmdp.mapper.UserMapper;
 import com.hmdp.service.IUserService;
 import com.hmdp.utils.RegexUtils;
+import com.hmdp.utils.UserHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,8 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -112,6 +115,25 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
         //8.返回token
         return Result.ok(token);
+    }
+
+    @Override
+    public Result sign() {
+        // 1. 获取当前登录用户
+        Long userId = UserHolder.getUser().getId();
+        // 2. 获取日期
+        LocalDateTime now = LocalDateTime.now();
+        // 3. 拼接key
+        String keySuffix =  now.format(DateTimeFormatter.ofPattern(":yyyyMM"));
+        String key = USER_SIGN_KEY + userId + keySuffix;
+        // 4. 获取今天是本月的第几天
+        int dayOfMonth = now.getDayOfMonth();
+        // 5. 写入Redis SETBIT key offset 1
+        stringRedisTemplate.opsForValue().setBit(key,dayOfMonth - 1,true);
+        return Result.ok();
+        /*   实现了签到功能
+             这个功能没有在页面中实现，要用postman发请求来测试
+         */
     }
 
     private User createUserWithPhone(String phone) {

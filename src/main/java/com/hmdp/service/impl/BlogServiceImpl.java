@@ -152,12 +152,13 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
     }
 
     @Override
-    public Result queryBlogOfFollow(Long max, Integer offset) {
+    public Result queryBlogOfFollow(Long max, Integer offset) {//实现滚动分页查询
         // 1.获取当前用户
         Long userId = UserHolder.getUser().getId();
         // 2.查询收件箱 ZREVRANGEBYSCORE key Max Min LIMIT offset count
         String key = FEED_KEY + userId;
-        Set<ZSetOperations.TypedTuple<String>> typedTuples = stringRedisTemplate.opsForZSet()
+        Set<ZSetOperations.TypedTuple<String>> typedTuples = stringRedisTemplate
+                .opsForZSet()
                 .reverseRangeByScoreWithScores(key, 0, max, offset, 2);
         // 3.非空判断
         if (typedTuples == null || typedTuples.isEmpty()) {

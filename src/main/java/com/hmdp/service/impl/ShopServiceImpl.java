@@ -15,6 +15,7 @@ import org.springframework.data.geo.GeoResults;
 import org.springframework.data.redis.connection.RedisGeoCommands;
 import org.springframework.data.redis.core.StringRedisTemplate;
 //import org.springframework.data.redis.domain.geo.GeoReference;
+import org.springframework.data.redis.domain.geo.GeoReference;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -74,8 +75,10 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
         return Result.ok();
     }
 
-    /*
-    @Override
+
+
+
+    @Override//查询附近的店铺，并显示该店铺离自己的距离
     public Result queryShopByType(Integer typeId, Integer current, Double x, Double y) {
         // 1.判断是否需要根据坐标查询
         if (x == null || y == null) {
@@ -98,7 +101,9 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
                         key,
                         GeoReference.fromCoordinate(x, y),
                         new Distance(5000),
-                        RedisGeoCommands.GeoSearchCommandArgs.newGeoSearchArgs().includeDistance().limit(end)
+                        RedisGeoCommands.
+                                GeoSearchCommandArgs
+                                .newGeoSearchArgs().includeDistance().limit(end)
                 );
         // 4.解析出id
         if (results == null) {
@@ -112,7 +117,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
         // 4.1.截取 from ~ end的部分
         List<Long> ids = new ArrayList<>(list.size());
         Map<String, Distance> distanceMap = new HashMap<>(list.size());
-        list.stream().skip(from).forEach(result -> {
+        list.stream().skip(from).forEach(result -> {//进行一个for循环
             // 4.2.获取店铺id
             String shopIdStr = result.getContent().getName();
             ids.add(Long.valueOf(shopIdStr));
@@ -129,5 +134,5 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
         // 6.返回
         return Result.ok(shops);
     }
-*/
+
 }
