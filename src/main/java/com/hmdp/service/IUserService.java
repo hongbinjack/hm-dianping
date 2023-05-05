@@ -20,4 +20,5 @@ public interface IUserService extends IService<User> {
 
     Result sign();
 
+    Result signCount();
 }
