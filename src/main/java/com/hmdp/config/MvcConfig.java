@@ -36,7 +36,8 @@ public class MvcConfig implements WebMvcConfigurer {
         /**
          * 刷新拦截器
          */
-        registry.addInterceptor(new RefreshTokenInterceptor(stringRedisTemplate)).addPathPatterns("/**").order(0);
+        registry.addInterceptor(new RefreshTokenInterceptor(stringRedisTemplate))
+                .addPathPatterns("/**").order(0);
        //上面这行代码的这个拦截器拦截所有请求
 
         //order中数字越小，该拦截器越先执行
