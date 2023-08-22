@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+// 这是第二层拦截器，LoginInterceptor是第二层
 public class RefreshTokenInterceptor implements HandlerInterceptor {
 
 
@@ -23,7 +24,7 @@ public class RefreshTokenInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        // 1.获取请求头中的token
+        // 1.获取请求头中的token,前端携带的token名称
         String token =  request.getHeader("authorization");
         if(StrUtil.isBlank(token)){
             return true;

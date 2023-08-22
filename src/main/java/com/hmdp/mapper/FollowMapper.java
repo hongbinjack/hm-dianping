@@ -9,5 +9,4 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * </p>
  */
 public interface FollowMapper extends BaseMapper<Follow> {
-
 }

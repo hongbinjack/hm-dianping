@@ -5,8 +5,9 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-/*
+/*  登录过程的拦截器
    这个拦截器是第一层拦截器，只判断是否有用户，其他拦截在RefreshTokenInterceptor拦截中实现
+   在config.MvcConfig中添加该拦截器
     }
  */
 public class LoginInterceptor implements HandlerInterceptor {
@@ -32,6 +33,7 @@ public class LoginInterceptor implements HandlerInterceptor {
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler,Exception ex) throws Exception{
-
+        // 移除用户，避免内存泄露
+       UserHolder.removeUser();
     }
 }

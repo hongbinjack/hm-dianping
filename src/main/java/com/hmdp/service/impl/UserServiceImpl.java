@@ -43,14 +43,14 @@ import static com.hmdp.utils.SystemConstants.USER_NICK_NAME_PREFIX;
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IUserService {
 
     @Resource
-     private StringRedisTemplate stringRedisTemplate;
+    private StringRedisTemplate stringRedisTemplate;
     @Override
     public Result sendCode(String phone, HttpSession session) {
 
         //1.校验手机号
         if(RegexUtils.isPhoneInvalid(phone)){
 
-        //2.如果不符合，返回错误信息
+            //2.如果不符合，返回错误信息
             return Result.fail("手机格式错误!");
         }
 
@@ -60,17 +60,23 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         //4.保存验证码到redis
         //session.setAttribute("code",code);
         //加上业务名称，防止其他业务也是用手机号来做键，同时设定该验证码的有效期，即设定key的有效期,2min
-         stringRedisTemplate.opsForValue().set(LOGIN_CODE_KEY + phone,code,LOGIN_CODE_TTL, TimeUnit.MINUTES);
+        stringRedisTemplate.opsForValue().set(LOGIN_CODE_KEY + phone,code,LOGIN_CODE_TTL, TimeUnit.MINUTES);
 
 
         //5.发送验证码
-         log.debug("发送短信验证码成功，验证码{}",code);
+        log.debug("发送短信验证码成功，验证码{}",code);
         //6.返回ok
         return Result.ok();
     }
 
 
-    @Override  //实现登录功能
+    /**
+     * 实现登录功能
+     * @param loginForm
+     * @param session
+     * @return
+     */
+    @Override
     public Result login(LoginFormDTO loginForm, HttpSession session) {
 
         //1.校验手机号
@@ -94,20 +100,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
         //5.判断用户是否存在
         if(user == null){
-         //6.不存在，创建新用户并保存
-        user =  createUserWithPhone(phone);
+            //6.不存在，创建新用户并保存
+            user =  createUserWithPhone(phone);
         }
 
-        //7.1保存用户信息到redis中。将user中的信息拷贝到UserDTO，存到session，保护用户信息
+        //7.1保存用户信息到Redis中。将user中的信息拷贝到UserDTO，存到session，保护用户信息
         session.setAttribute("user", BeanUtil.copyProperties(user, UserDTO.class));
         //7.2随机生成token，作为登录令牌
-        String token = UUID.randomUUID().toString(true);
+        String token = UUID.randomUUID().toString(true);// isSimple表示不带下划线
         // TODO 7.3将User对象转换为HashMap存储
         UserDTO userDTO =  BeanUtil.copyProperties(user,UserDTO.class);
         Map<String, Object> userMap = BeanUtil.beanToMap(userDTO,new HashMap<>(),
-        CopyOptions.create().setIgnoreNullValue(true)
-                .setFieldValueEditor((fieldName,fieldValue) -> fieldValue.toString())
-                                                         );
+                         CopyOptions.create()
+                        .setIgnoreNullValue(true)
+                        .setFieldValueEditor((fieldName,fieldValue) -> fieldValue.toString())
+        );
         //7.4存储
         String tokenKey = LOGIN_USER_KEY + token;
         stringRedisTemplate.opsForHash().putAll(tokenKey,userMap);
@@ -119,6 +126,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         return Result.ok(token);
     }
 
+
+    /**
+     *           实现了签到功能
+     *            这个功能没有在页面中实现，要用postman发请求来测试
+     * @return
+     */
     @Override
     public Result sign() {
         // 1. 获取当前登录用户
@@ -133,9 +146,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         // 5. 写入Redis SETBIT key offset 1
         stringRedisTemplate.opsForValue().setBit(key,dayOfMonth - 1,true);
         return Result.ok();
-        /*   实现了签到功能
-             这个功能没有在页面中实现，要用postman发请求来测试
-         */
     }
 
     @Override
@@ -156,11 +166,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
                         .get(BitFieldSubCommands.BitFieldType.unsigned(dayOfMonth))
                         .valueAt(0)
         );
-      if(result == null || result.isEmpty()){
-          //没有任何签到结果
-          return Result.ok(0);
-      }
-      Long num = result.get(0);
+        if(result == null || result.isEmpty()){
+            //没有任何签到结果
+            return Result.ok(0);
+        }
+        Long num = result.get(0);
         if(num == null || num == 0){
             return Result.ok(0);
         }
